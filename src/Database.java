@@ -1,4 +1,7 @@
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.zip.Checksum;
 
 public class Database {
 
@@ -19,15 +22,7 @@ public class Database {
 
     public boolean insert(Artist artist) {
 
-        try {
-            if(connection == null || !connection.isValid(5)) {
-                System.err.println("Connection error");
-                return false;
-            }
-        } catch (SQLException e) {
-            System.err.println("Connection error");
-            return false;
-        }
+        if(!CheckConnection()) return false;
 
         String query = "INSERT INTO spotify(id, name, genre, country) VALUES (?, ?, ?, ?)";
 
@@ -41,6 +36,47 @@ public class Database {
         }
         catch (SQLException e) {
             System.err.println("Query error");
+            return false;
+        }
+
+        return true;
+    }
+
+    public List<Artist> get() {
+
+        if (!CheckConnection()) return null;
+        List<Artist> artists = new ArrayList<>();
+        String query = "SELECT * FROM artists";
+
+        try {
+            PreparedStatement statement = connection.prepareStatement(query);
+            ResultSet result = statement.executeQuery();
+
+            while (result.next()) {
+                Artist artist = new Artist(
+                    result.getString("name"),
+                    result.getString("genre"),
+                    result.getString("country")
+                );
+                artists.add(artist);
+            }
+        } catch (SQLException e) {
+            System.err.println("Query error: " + e.getMessage());
+            return null;
+        }
+
+        return artists;
+    }
+
+
+    private boolean CheckConnection() {
+        try {
+            if(connection == null || !connection.isValid(5)) {
+                System.err.println("Connection error");
+                return false;
+            }
+        } catch (SQLException e) {
+            System.err.println("Connection error");
             return false;
         }
 
