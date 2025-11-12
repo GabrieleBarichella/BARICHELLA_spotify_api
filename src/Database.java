@@ -1,11 +1,10 @@
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.Checksum;
 
 public class Database {
 
-    private Connection connection = null;
+    private final Connection connection;
     public static Database instance = null;
 
     private Database() throws SQLException {
@@ -20,9 +19,9 @@ public class Database {
         return instance;
     }
 
-    public boolean insert(Artist artist) {
+    public void insert(Artist artist) {
 
-        if(!CheckConnection()) return false;
+        if(CheckConnectionError()) return;
 
         String query = "INSERT INTO spotify(id, name, genre, country) VALUES (?, ?, ?, ?)";
 
@@ -36,15 +35,12 @@ public class Database {
         }
         catch (SQLException e) {
             System.err.println("Query error");
-            return false;
         }
-
-        return true;
     }
 
     public List<Artist> get() {
 
-        if (!CheckConnection()) return null;
+        if (CheckConnectionError()) return null;
         List<Artist> artists = new ArrayList<>();
         String query = "SELECT * FROM artists";
 
@@ -69,17 +65,17 @@ public class Database {
     }
 
 
-    private boolean CheckConnection() {
+    private boolean CheckConnectionError() {
         try {
             if(connection == null || !connection.isValid(5)) {
                 System.err.println("Connection error");
-                return false;
+                return true;
             }
         } catch (SQLException e) {
             System.err.println("Connection error");
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 }

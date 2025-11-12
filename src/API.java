@@ -36,7 +36,7 @@ public class API {
 
         Gson gson = new Gson();
         Type songListType = new TypeToken<List<Song>>(){}.getType();
-        List<Song> apiResponse = gson.fromJson(response.body(), songListType);
+        List<Song> apiResponse = response != null ? gson.fromJson(response.body(), songListType) : null;
 
         if(apiResponse == null){
             System.out.println("Error: Api response is null");
@@ -54,7 +54,7 @@ public class API {
 
         Gson gson = new Gson();
         Type artistListType = new TypeToken<List<Artist>>(){}.getType();
-        List<Artist> apiResponse = gson.fromJson(response.body(), artistListType);
+        List<Artist> apiResponse = response != null ? gson.fromJson(response.body(), artistListType) : null;
 
         if(apiResponse == null){
             System.out.println("Error: Api response is null");
@@ -71,7 +71,7 @@ public class API {
         HttpResponse<String> response = getHttpResponse(request);
 
         Gson gson = new Gson();
-        Artist apiResponse = gson.fromJson(response.body(), Artist.class);
+        Artist apiResponse = response != null ? gson.fromJson(response.body(), Artist.class) : null;
 
         if(apiResponse == null){
             System.out.println("Error: Api response is null");
@@ -100,7 +100,7 @@ public class API {
         HttpResponse<String> response =  getHttpResponse(request);
 
         Gson gson = new Gson();
-        Song apiResponse = gson.fromJson(response.body(), Song.class);
+        Song apiResponse = response != null ? gson.fromJson(response.body(), Song.class) : null;
 
         if(apiResponse == null){
             System.out.println("Error: Api response is null");
@@ -115,14 +115,7 @@ public class API {
         String url = base_url + "artisti";
         String artistToJson = new Gson().toJson(artist);
         HttpRequest request = getHttpRequest(url, "POST",  HttpRequest.BodyPublishers.ofString(artistToJson));
-        try {
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            return true;
-        }
-        catch (IOException | InterruptedException e) {
-            System.out.println("Error: " + e.getMessage());
-            return false;
-        }
+        return sendHttpRequest(request);
     }
 
     public boolean editArtist(Artist artist, int id) {
@@ -130,23 +123,20 @@ public class API {
         String url = base_url + "artisti/" + id;
         String artistToJson = new Gson().toJson(artist);
         HttpRequest request = getHttpRequest(url, "PUT",  HttpRequest.BodyPublishers.ofString(artistToJson));
-        try {
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            return true;
-        }
-        catch (IOException | InterruptedException e) {
-            System.out.println("Error: " + e.getMessage());
-            return false;
-        }
+        return sendHttpRequest(request);
     }
 
     public boolean deleteArtist(int id) {
 
         String url = base_url + "artisti/" + id;
         HttpRequest request = getHttpRequest(url, "DELETE",  HttpRequest.BodyPublishers.noBody());
+        return sendHttpRequest(request);
+    }
+
+    public boolean sendHttpRequest(HttpRequest request) {
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            return true;
+            return response != null && response.statusCode() == 200;
         }
         catch (IOException | InterruptedException e) {
             System.out.println("Error: " + e.getMessage());
